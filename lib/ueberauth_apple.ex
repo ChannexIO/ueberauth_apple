@@ -3,14 +3,13 @@ defmodule UeberauthApple do
   @public_key_url "https://appleid.apple.com/auth/keys"
   @alg "RS256"
 
-  def uid_from_id_token(id_token) do
+  def fields_from_id_token(id_token) do
     with {:ok, %{body: response_body}} <- HTTPoison.get(@public_key_url),
          {true, %JOSE.JWT{fields: fields}, _jws} <-
            Poison.decode!(response_body)["keys"]
            |> List.first()
-           |> JOSE.JWT.verify(id_token),
-         {:ok, uid} <- {:ok, fields["sub"]} do
-      uid
+           |> JOSE.JWT.verify(id_token) do
+      fields
     end
   end
 
