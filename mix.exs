@@ -22,7 +22,7 @@ defmodule UeberauthApple.Mixfile do
   end
 
   def application do
-    [applications: [:logger, :oauth2, :ueberauth]]
+    [applications: [:logger, :oauth2, :ueberauth, :jose]]
   end
 
   defp deps do
@@ -30,10 +30,7 @@ defmodule UeberauthApple.Mixfile do
       {:oauth2, ">= 0.8.0"},
       {:ueberauth, "~> 0.4"},
       {:jose, "~> 1.0"},
-      {:httpoison, "~> 0.7"},
-      {:credo, "~> 0.8", only: [:dev, :test]},
-      {:earmark, ">= 0.0.0", only: :dev},
-      {:ex_doc, "~> 0.3", only: :dev}
+      {:httpoison, "~> 0.7"}
     ]
   end
 
@@ -48,7 +45,7 @@ defmodule UeberauthApple.Mixfile do
   defp package do
     [
       files: ["lib", "mix.exs", "README.md", "LICENSE"],
-      maintainers: ["KosyanMedia", "Nikita Bulatov"],
+      maintainers: ["KosyanMedia", "Alexey Shekhirin"],
       licenses: ["MIT"],
       links: %{"GitHub": @url}
     ]
