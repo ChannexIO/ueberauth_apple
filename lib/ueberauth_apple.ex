@@ -5,7 +5,7 @@ defmodule UeberauthApple do
   def uid_from_id_token(id_token) do
     with {:ok, %{body: response_body}} <- HTTPoison.get(@public_key_url),
          {true, %JOSE.JWT{fields: fields}, _jws} <-
-           Ueberauth.json_library().decode!(response_body)["keys"]
+           Poison.decode!(response_body)["keys"]
            |> List.first()
            |> JOSE.JWT.verify(id_token),
          {:ok, uid} <- {:ok, fields["sub"]} do
