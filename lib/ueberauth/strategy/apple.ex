@@ -37,7 +37,7 @@ defmodule Ueberauth.Strategy.Apple do
     case Ueberauth.Strategy.Apple.OAuth.get_access_token(params, opts) do
       {:ok, token} ->
         fields = UeberauthApple.fields_from_id_token(token.other_params["id_token"])
-        user = {}
+        user = Map.new
                |> Map.put("uid", fields["sub"])
                |> Map.put("email", fields["email"])
                |> Map.put("name", fields["name"])
