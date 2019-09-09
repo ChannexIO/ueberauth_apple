@@ -22,6 +22,7 @@ defmodule Ueberauth.Strategy.Apple do
       |> with_param(:access_type, conn)
       |> with_param(:prompt, conn)
       |> with_param(:state, conn)
+      |> Keyword.put(:response_mode, "form_post")
 
     opts = oauth_client_options_from_conn(conn)
     redirect!(conn, Ueberauth.Strategy.Apple.OAuth.authorize_url!(params, opts))
