@@ -30,7 +30,9 @@ defmodule UeberauthApple.Mixfile do
       {:oauth2, ">= 0.8.0"},
       {:ueberauth, "~> 0.4"},
       {:jose, "~> 1.0"},
-      {:httpoison, "~> 0.7"}
+      {:httpoison, "~> 0.7"},
+      {:poison, "~> 3.1.0"},
+      {:json_web_token, "~>0.2.10"},
     ]
   end
 

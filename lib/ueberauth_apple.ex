@@ -7,10 +7,19 @@ defmodule UeberauthApple do
     with {:ok, %{body: response_body}} <- HTTPoison.get(@public_key_url),
          {true, %JOSE.JWT{fields: fields}, _jws} <-
            Poison.decode!(response_body)["keys"]
-           |> List.first()
-           |> JOSE.JWT.verify(id_token) do
+           |> get_fields(id_token) do
       fields
     end
+  end
+
+  defp get_fields(keys, token) do
+    keys
+    |> Enum.reduce(nil, fn key, acc ->
+        case acc do
+          res={true, _, _jws} -> res
+          _ -> JOSE.JWT.verify(key, token)
+        end
+      end)
   end
 
   def verify_token(key, token) do
