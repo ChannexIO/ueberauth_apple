@@ -3,7 +3,7 @@ defmodule Ueberauth.Strategy.Apple do
   Apple Strategy for Überauth.
   """
 
-  use Ueberauth.Strategy, uid_field: :uid, default_scope: "name email"
+  use Ueberauth.Strategy, uid_field: :uid, default_scope: "email name"
 
   alias Ueberauth.Auth.Info
   alias Ueberauth.Auth.Credentials
@@ -25,7 +25,10 @@ defmodule Ueberauth.Strategy.Apple do
       |> Keyword.put(:response_mode, "form_post")
 
     opts = oauth_client_options_from_conn(conn)
-    redirect!(conn, Ueberauth.Strategy.Apple.OAuth.authorize_url!(params, opts))
+
+    url = Ueberauth.Strategy.Apple.OAuth.authorize_url!(params, opts)
+    # https://developer.apple.com/forums/thread/133533
+    redirect!(conn, String.replace(url, "+", "%20"))
   end
 
   @doc """
