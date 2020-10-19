@@ -2,6 +2,23 @@ defmodule UeberauthApple do
   @default_expires_in 86400 * 180
   @public_key_url "https://appleid.apple.com/auth/keys"
 
+  def user_from_id_token(id_token) do
+    with keys <- fetch_public_keys(),
+         key <- get_appropriate_key(keys, id_token),
+         {true, %JOSE.JWT{fields: fields}, _JWS} <- JOSE.JWT.verify(key, id_token)
+    do
+      user = %{
+        "uid" => fields["sub"],
+        "name" => fields["name"],
+        "email" => fields["email"]
+      }
+
+      {:ok, user}
+    else
+      _ -> {:error, :invalid_id_token}
+    end
+  end
+
   def uid_from_id_token(id_token) do
     with keys <- fetch_public_keys(),
          key <- get_appropriate_key(keys, id_token),

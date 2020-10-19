@@ -1,8 +1,8 @@
 defmodule UeberauthApple.Mixfile do
   use Mix.Project
 
-  @version "0.5.0"
-  @url "https://github.com/loopsocial/ueberauth_apple"
+  @version "0.6.0"
+  @url "https://github.com/ChannexIO/ueberauth_apple"
 
   def project do
     [
@@ -48,7 +48,7 @@ defmodule UeberauthApple.Mixfile do
   defp package do
     [
       files: ["lib", "mix.exs", "README.md", "LICENSE"],
-      maintainers: ["Jerry Luk"],
+      maintainers: ["Andrew Yudin"],
       licenses: ["MIT"],
       links: %{GitHub: @url}
     ]

@@ -21,6 +21,7 @@ defmodule Ueberauth.Strategy.Apple do
       |> with_optional(:access_type, conn)
       |> with_param(:access_type, conn)
       |> with_param(:prompt, conn)
+      |> with_param(:response_mode, conn)
       |> with_param(:state, conn)
 
     opts = oauth_client_options_from_conn(conn)
@@ -45,6 +46,26 @@ defmodule Ueberauth.Strategy.Apple do
 
       {:error, {error_code, error_description}} ->
         set_errors!(conn, [error(error_code, error_description)])
+    end
+  end
+
+  def handle_callback!(%Plug.Conn{params: %{"id_token" => id_token} = params} = conn) do
+    with {:ok, user} = UeberauthApple.user_from_id_token(id_token) do
+      name = Map.get(params, "name")
+
+      user =
+        if is_nil(name) do
+          user
+        else
+          Map.put(user, "name", name)
+        end
+
+      conn
+      |> put_private(:apple_token, OAuth2.AccessToken.new(id_token))
+      |> put_private(:apple_user, user)
+    else
+      {:error, error} ->
+        set_errors!(conn, [error("auth_failed", error)])
     end
   end
 

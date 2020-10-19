@@ -1,3 +1,7 @@
+# v 0.6.0
+
+* Allows using a direct auth through app token
+
 # v 0.3.0
 
 * Allows using a function to generate the client secret
