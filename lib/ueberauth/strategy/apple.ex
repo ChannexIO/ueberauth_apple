@@ -56,8 +56,8 @@ defmodule Ueberauth.Strategy.Apple do
   def handle_callback!(%Plug.Conn{params: %{"id_token" => code}} = conn) do
     opts = oauth_client_options_from_conn(conn)
     client = OAuth.client(opts)
-
-    request_body = [
+    request_body =
+      [
       code: code,
       grant_type: "authorization_code",
       redirect_uri: Map.get(client, :redirect_uri),
