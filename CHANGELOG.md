@@ -1,3 +1,7 @@
+# v 0.6.1
+
+* Add default response_mode
+
 # v 0.6.0
 
 * Allows using a direct auth through app token

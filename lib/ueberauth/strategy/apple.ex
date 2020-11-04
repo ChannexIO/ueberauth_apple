@@ -3,39 +3,43 @@ defmodule Ueberauth.Strategy.Apple do
   Google Strategy for Überauth.
   """
 
-  use Ueberauth.Strategy, uid_field: :uid, default_scope: "name email"
+  use Ueberauth.Strategy,
+    uid_field: :uid,
+    default_scope: "name email",
+    default_response_mode: "form_post"
 
   alias Ueberauth.Auth.Info
   alias Ueberauth.Auth.Credentials
   alias Ueberauth.Auth.Extra
+  alias Ueberauth.Strategy.Apple.OAuth
 
   @doc """
   Handles initial request for Apple authentication.
   """
   def handle_request!(conn) do
     scopes = conn.params["scope"] || option(conn, :default_scope)
+    response_mode = conn.params["response_mode"] || option(conn, :default_response_mode)
 
     params =
-      [scope: scopes]
+      [scope: scopes, response_mode: response_mode]
       |> with_optional(:prompt, conn)
       |> with_optional(:access_type, conn)
       |> with_param(:access_type, conn)
       |> with_param(:prompt, conn)
-      |> with_param(:response_mode, conn)
       |> with_param(:state, conn)
 
     opts = oauth_client_options_from_conn(conn)
-    redirect!(conn, Ueberauth.Strategy.Apple.OAuth.authorize_url!(params, opts))
+    redirect!(conn, OAuth.authorize_url!(params, opts))
   end
 
   @doc """
-  Handles the callback from Apple.
+  Handles the callback from Apple.123
   """
   def handle_callback!(%Plug.Conn{params: %{"code" => code} = params} = conn) do
     user = (params["user"] && Ueberauth.json_library().decode!(params["user"])) || %{}
     opts = oauth_client_options_from_conn(conn)
 
-    case Ueberauth.Strategy.Apple.OAuth.get_access_token([code: code], opts) do
+    case OAuth.get_access_token([code: code], opts) do
       {:ok, token} ->
         apple_user =
           Map.put(user, "uid", UeberauthApple.uid_from_id_token(token.other_params["id_token"]))
@@ -49,23 +53,28 @@ defmodule Ueberauth.Strategy.Apple do
     end
   end
 
-  def handle_callback!(%Plug.Conn{params: %{"id_token" => id_token} = params} = conn) do
-    with {:ok, user} = UeberauthApple.user_from_id_token(id_token) do
-      name = Map.get(params, "name")
+  def handle_callback!(%Plug.Conn{params: %{"id_token" => code}} = conn) do
+    opts = oauth_client_options_from_conn(conn)
+    client = OAuth.client(opts)
 
-      user =
-        if is_nil(name) do
-          user
-        else
-          Map.put(user, "name", name)
-        end
+    request_body = [
+      code: code,
+      grant_type: "authorization_code",
+      redirect_uri: Map.get(client, :redirect_uri),
+      client_id: Map.get(client, :client_id),
+      client_secret: Map.get(client, :client_secret)
+    ]
 
-      conn
-      |> put_private(:apple_token, OAuth2.AccessToken.new(id_token))
-      |> put_private(:apple_user, user)
-    else
-      {:error, error} ->
-        set_errors!(conn, [error("auth_failed", error)])
+    case OAuth.get_access_token(request_body, opts) do
+      {:ok, token} ->
+        apple_user = UeberauthApple.user_from_id_token(token.other_params["id_token"])
+
+        conn
+        |> put_private(:apple_token, token)
+        |> put_private(:apple_user, apple_user)
+
+      {:error, {error_code, error_description}} ->
+        set_errors!(conn, [error(error_code, error_description)])
     end
   end
 

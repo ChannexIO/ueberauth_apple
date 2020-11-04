@@ -5,15 +5,12 @@ defmodule UeberauthApple do
   def user_from_id_token(id_token) do
     with keys <- fetch_public_keys(),
          key <- get_appropriate_key(keys, id_token),
-         {true, %JOSE.JWT{fields: fields}, _JWS} <- JOSE.JWT.verify(key, id_token)
-    do
-      user = %{
+         {true, %JOSE.JWT{fields: fields}, _JWS} <- JOSE.JWT.verify(key, id_token) do
+      %{
         "uid" => fields["sub"],
         "name" => fields["name"],
         "email" => fields["email"]
       }
-
-      {:ok, user}
     else
       _ -> {:error, :invalid_id_token}
     end
